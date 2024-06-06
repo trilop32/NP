@@ -23,8 +23,9 @@ BOOL CheckMask(DWORD mask)
 }
 INT CountOnes(DWORD mask)
 {
+	DWORD zero_bits = 0;
 	DWORD power;
-	for (int i = 1; i; i <<= 1)
+	for (int i = 1; i; i <<= 1,zero_bits++)
 	{
 		if (mask & i)
 		{
@@ -78,12 +79,12 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			//EN_ - Edit notification (Уведомление)
 			if (HIWORD(wParam) == EN_CHANGE)
 			{
-			//	//BYTE = 8 bit;		CHAR
-			//	//WORD = 2 Bytes (16 bit);	SHORT
-			//	//DWORD (Double Word - Двойное слоово) = 4 Bytes (32 bit)	INT
-			//	//QWORD (Quad Word - Учетверенное слово) = 8 Bytes (64 bit)	LONG LONG
-			//	//TBYTE (Ten Bytes - Десять Байт) = 80 bit;
-			//	//DQWORD (Double Quad Word - Двойное учетверенное слово) = 128 bit;
+				//	//BYTE = 8 bit;		CHAR
+				//	//WORD = 2 Bytes (16 bit);	SHORT
+				//	//DWORD (Double Word - Двойное слоово) = 4 Bytes (32 bit)	INT
+				//	//QWORD (Quad Word - Учетверенное слово) = 8 Bytes (64 bit)	LONG LONG
+				//	//TBYTE (Ten Bytes - Десять Байт) = 80 bit;
+				//	//DQWORD (Double Quad Word - Двойное учетверенное слово) = 128 bit;
 				DWORD dw_address;
 				SendMessage(hIPaddress, IPM_GETADDRESS, 0, (LPARAM)&dw_address);
 				INT first = FIRST_IPADDRESS(dw_address);
@@ -94,7 +95,7 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				sprintf_s(sz_info, SIZE, "Info:\nFirst: %i, Second: %i, Third: %i, Forth: %i", first, second, third, fourth);
 				SendMessage(hStaticInfo, WM_SETTEXT, 0, (LPARAM)sz_info);
 
-			//	////////////////////////////////////////////////////////////////////////////////
+				//	////////////////////////////////////////////////////////////////////////////////
 
 				if (first < 128)SendMessage(hEditPrefix, WM_SETTEXT, 0, (LPARAM)"8");
 				else if (first < 192)SendMessage(hEditPrefix, WM_SETTEXT, 0, (LPARAM)"16");
@@ -102,6 +103,20 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		break;
+		case IDC_IPMASK:
+		{
+		//	if (HIWORD(wParam) == EN_CHANGE)
+		//	{
+		//		HWND hImask = GetDlgItem(hwnd, IDC_IPMASK);
+		//		HWND hEditPrefix = GetDlgItem(hwnd, IDC_EDIT_PREFIX);
+		//		DWORD dw_mask = 0;
+		//		SendMessage(hImask, IPM_GETADDRESS, 0, (LPARAM)&dw_mask); // явное приведение (LPARAM)
+		//		INT prefix = CountOnes(dw_mask);
+		//		CHAR sz_prefix[3] = {};//sz string zero(строка заканчивающаяся нулём)
+		//		sprintf(sz_prefix, "%i", prefix);
+		//		SendMessage(hEditPrefix, WM_SETTEXT, 0, (LPARAM)sz_prefix);
+		//	}
+		}break;
 		case IDC_EDIT_PREFIX:
 		{
 			HWND hEditPrefix = GetDlgItem(hwnd, IDC_EDIT_PREFIX);
@@ -129,9 +144,38 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDCANCEL: EndDialog(hwnd, 0); break;
 		}
 		break;
+	case WM_NOTIFY:
+	{
+		HWND hImask = GetDlgItem(hwnd, IDC_IPMASK);
+		HWND hEditPrefix = GetDlgItem(hwnd, IDC_EDIT_PREFIX);
+		switch (wParam)
+		{
+			case IDC_IPMASK:
+			{
+				DWORD dw_mask = 0;
+				SendMessage(hImask, IPM_GETADDRESS, 0, (LPARAM)&dw_mask); // явное приведение (LPARAM)
+				int i = 32;
+				for (; dw_mask & 1 ^ 1; i--)dw_mask >>= 1;// >>= 1 здвиг вправо на 1 бит 
+				CHAR sz_prefix[5]{};
+				sprintf(sz_prefix, "%i", i);
+				SendMessage(hEditPrefix, WM_SETTEXT, 0, (LPARAM)sz_prefix);
+			}break;
+		}break;
+	}break;
+
 	case WM_CLOSE:
 		EndDialog(hwnd, 0);
 		break;
 	}
 	return FALSE;
 }
+/*
+NOT(инверсия)(~)- унарная операция которая еденицы заменяет нулями а нули еденицами(например: число 5=0000 0101 будет  ~5=1111 1010)
+инверсия используется для поиска орицательного числа в двоичной системе счисления. 
+Для того чтобы найти отрицательное число в дваичной сс - для этого нужно проинвертировать двоичное число и прибавить к нему 1
+OR(побитовое сложение)(|) бит результата будет равен 1, если тотже бит хотябы в одной аперанде равен 1(например: 7= 0000 0111 и 5= 0000 0101 то получим 0000 0111 = 7)
+AND(побитовое умножение)(&)Если сосответсвующий бит хотябы одного апераднда равен 0 то и он будет 0(например: 7= 0000 0111 и 5= 0000 0101 то получим 0000 0101 = 5)
+XOR(^) часто используется для сравнения, если произвести XOR к одинаковым значения результат будет 0, если за XOR-ить 2 разных значения результат будет отличный от 0
+(например: 7= 0000 0111 и 5= 0000 0101 то получим 0000 0010 = 2)
+аперация AND позволяет проверить число на чётность если побитовое умножение числа на 1 вернёт 1 число не чёт, если верён 0 то чсило 0
+*/
