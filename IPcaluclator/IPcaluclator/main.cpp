@@ -3,15 +3,12 @@
 #include<CommCtrl.h>
 #include<cstdio>
 #include"resource.h"	//"file" - компилятор будет искать file сначала в каталоге с проектом, а потом в системных каталогах Visual Studio
-
 BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdShow)
 {
 	DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, (DLGPROC)DlgProc, 0);
 	return 0;
 }
-
 BOOL CheckMask(DWORD mask)
 {
 	//DWORD pattern = 1 << 32;
@@ -33,10 +30,8 @@ INT CountOnes(DWORD mask)
 			break;
 		}
 	}
-
 	return power;
 }
-
 //Процедура окна - это самая обычная функция, которая вызывается при запуске окна.
 BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -72,8 +67,8 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			CONST INT SIZE = 256;
 			CHAR sz_info[SIZE]{};
-
 			HWND hIPaddress = GetDlgItem(hwnd, IDC_IPADDRESS);
+			HWND hIMask = GetDlgItem(hwnd, IDC_IPMASK);
 			HWND hStaticInfo = GetDlgItem(hwnd, IDC_STATIC_INFO);
 			HWND hEditPrefix = GetDlgItem(hwnd, IDC_EDIT_PREFIX);
 			//EN_ - Edit notification (Уведомление)
@@ -91,12 +86,9 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				INT second = SECOND_IPADDRESS(dw_address);
 				INT third = THIRD_IPADDRESS(dw_address);
 				INT fourth = FOURTH_IPADDRESS(dw_address);
-
 				sprintf_s(sz_info, SIZE, "Info:\nFirst: %i, Second: %i, Third: %i, Forth: %i", first, second, third, fourth);
-				
 				SendMessage(hStaticInfo, WM_SETTEXT, 0, (LPARAM)sz_info);
-
-				//	////////////////////////////////////////////////////////////////////////////////
+				//////////////////////////////////////////////////////////////////////////////////
 
 				if (first < 128)SendMessage(hEditPrefix, WM_SETTEXT, 0, (LPARAM)"8");
 				else if (first < 192)SendMessage(hEditPrefix, WM_SETTEXT, 0, (LPARAM)"16");
@@ -163,7 +155,6 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}break;
 		}break;
 	}break;
-
 	case WM_CLOSE:
 		EndDialog(hwnd, 0);
 		break;
