@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-
 namespace dz_MASK
 {
     public partial class Form1 : Form
@@ -111,6 +110,7 @@ namespace dz_MASK
                 return;
             }
             int addressCount = CalculateAddressCount(network, mask);
+
             label_KOL.Text = addressCount.ToString();
             label_Yz.Text = (addressCount-2).ToString();
 
