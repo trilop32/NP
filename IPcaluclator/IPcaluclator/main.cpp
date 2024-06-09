@@ -93,6 +93,7 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				INT fourth = FOURTH_IPADDRESS(dw_address);
 
 				sprintf_s(sz_info, SIZE, "Info:\nFirst: %i, Second: %i, Third: %i, Forth: %i", first, second, third, fourth);
+				
 				SendMessage(hStaticInfo, WM_SETTEXT, 0, (LPARAM)sz_info);
 
 				//	////////////////////////////////////////////////////////////////////////////////
