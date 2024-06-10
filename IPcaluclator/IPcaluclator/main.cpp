@@ -9,30 +9,35 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, (DLGPROC)DlgProc, 0);
 	return 0;
 }
-BOOL CheckMask(DWORD mask)
-{
-	//DWORD pattern = 1 << 32;
-	for (int i = 0; i < 32; i++)
-	{
-
-	}
-	return TRUE;
-}
-INT CountOnes(DWORD mask)
-{
-	DWORD zero_bits = 0;
-	DWORD power;
-	for (int i = 1; i; i <<= 1,zero_bits++)
-	{
-		if (mask & i)
-		{
-			power = i;
-			break;
-		}
-	}
-	return power;
-}
+//BOOL CheckMask(DWORD mask)
+//{
+//	//DWORD pattern = 1 << 32;
+//	for (int i = 0; i < 32; i++)
+//	{
+//
+//	}
+//	return TRUE;
+//}
+//INT CountOnes(DWORD mask)
+//{
+//	DWORD zero_bits = 0;
+//	DWORD power;
+//	for (int i = 1; i; i <<= 1,zero_bits++)
+//	{
+//		if (mask & i)
+//		{
+//			power = i;
+//			break;
+//		}
+//	}
+//	return power;
+//}
 //Процедура окна - это самая обычная функция, которая вызывается при запуске окна.
+
+//CHAR* ParseAddress(CHAR sz_address[],CHAR sz_description, DWORD dw_address)
+//{
+//
+//}
 BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	//Все принимаемые параметры - это числовые значения длиной 4 Байта.
@@ -112,21 +117,62 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}break;
 		case IDC_EDIT_PREFIX:
 		{
+			HWND hIPAddress = GetDlgItem(hwnd, IDC_IPADDRESS);
 			HWND hEditPrefix = GetDlgItem(hwnd, IDC_EDIT_PREFIX);
 			HWND hIPmask = GetDlgItem(hwnd, IDC_IPMASK);
+			HWND hStataticInfo = GetDlgItem(hwnd, IDC_STATIC_INFO);
 			//DWORD dw_mask = UINT_MAX;
 			DWORD dw_mask = ~0;
 			if (HIWORD(wParam) == EN_CHANGE)
 			{
-				CONST INT SIZE = 8;
-				CHAR sz_buffer[SIZE];
-				SendMessage(hEditPrefix, WM_GETTEXT, SIZE, (LPARAM)sz_buffer);
+				CONST INT SIZE_PREFIX = 8;
+				CHAR sz_buffer[SIZE_PREFIX];
+				SendMessage(hEditPrefix, WM_GETTEXT, SIZE_PREFIX, (LPARAM)sz_buffer);
 				//MessageBox(hwnd, sz_buffer, "Prefix", MB_OK | MB_ICONINFORMATION);
 				INT shift = atoi(sz_buffer);
 				//dw_mask >>= (32 - shift);//Функция atoi() преобразует ASCII-строку в значение типа 'int'
 				//dw_mask <<= (32 - shift);
 				//SendMessage(hIPmask, IPM_SETADDRESS, 0, dw_mask);
-				SendMessage(hIPmask, IPM_SETADDRESS, 0, dw_mask >> (32 - shift) << (32 - shift));
+				SendMessage(hIPmask, IPM_SETADDRESS, 0, dw_mask /*>> (32 - shift)*/ <<= (32 - shift));
+
+				////////////////////////////////
+				
+				CONST int SIZE = 256;
+				CHAR sz_info[SIZE]{};
+				CHAR sz_network_address[SIZE]{};
+				CHAR sz_broadcast_address[SIZE]{};
+				CHAR sz_number_of_hosts[SIZE]{};
+				DWORD dw_address = 0;
+				SendMessage(hIPAddress, IPM_GETADDRESS, 0, (LPARAM)&dw_address);
+				DWORD dw_network_address = dw_address & dw_mask;
+				sprintf
+				(
+					sz_network_address,
+					"Адрес сети:\t%i.%i.%i.%i",
+					FIRST_IPADDRESS(dw_network_address),
+					SECOND_IPADDRESS(dw_network_address),
+					THIRD_IPADDRESS(dw_network_address),
+					FOURTH_IPADDRESS(dw_network_address)
+				);
+				DWORD dw_broadcast_address = ~dw_mask | dw_network_address;
+				sprintf(
+					sz_broadcast_address,
+					"Широковещательный адрес:\t%i.%i.%i.%i",
+					FIRST_IPADDRESS(dw_broadcast_address),
+					SECOND_IPADDRESS(dw_broadcast_address),
+					THIRD_IPADDRESS(dw_broadcast_address),
+					FOURTH_IPADDRESS(dw_broadcast_address)
+				);
+				DWORD dw_number_of_hosts = dw_broadcast_address - dw_network_address-1;
+				sprintf(sz_number_of_hosts, "Количество узлов:\t\t%u", dw_number_of_hosts);
+				sprintf(
+					sz_info,
+					"Info:\n%s\n%s\n%s",
+					sz_network_address,
+					sz_broadcast_address,
+					sz_number_of_hosts
+				);
+				SendMessage(hStataticInfo, WM_SETTEXT, 0, (LPARAM)sz_info);
 			}
 		}
 		break;
